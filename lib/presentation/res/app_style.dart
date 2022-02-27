@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:trading/presentation/app_font.dart';
+import 'package:trading/presentation/res/app_font.dart';
 
 
 class AppTextStyle{

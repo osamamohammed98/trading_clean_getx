@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:trading/presentation/app_color.dart';
-import 'package:trading/presentation/app_color.dart';
-import 'package:trading/presentation/app_color.dart';
-import 'package:trading/presentation/app_color.dart';
-import 'package:trading/presentation/app_color.dart';
-import 'package:trading/presentation/app_font.dart';
+import 'package:trading/presentation/res/app_color.dart';
+import 'package:trading/presentation/res/app_font.dart';
 
 import 'app_dimen.dart';
 import 'app_style.dart';
 
-class AppTheme {
-  ThemeData getApplicationTheme() {
+ class AppTheme {
+  static ThemeData getApplicationTheme() {
     return ThemeData(
         // main colors of the app
         primaryColor: AppColor.primary,
