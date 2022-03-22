@@ -55,6 +55,8 @@ import 'app_style.dart';
                 color: AppColor.darkGrey, fontSize: AppFontSize.s16),
             subtitle1: AppTextStyle.getMediumStyle(
                 color: AppColor.lightGrey, fontSize: AppFontSize.s14),
+            subtitle2: AppTextStyle.getMediumStyle(
+                color: AppColor.primary, fontSize: AppFontSize.s14),
             caption: AppTextStyle.getRegularStyle(color: AppColor.grey1),
             bodyText1: AppTextStyle.getRegularStyle(color: AppColor.grey)),
 
