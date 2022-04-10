@@ -17,4 +17,10 @@ class AppPreferences {
       return LanguageType.ENGLISH.getValue();
     }
   }
+
+  void setUserToken(token) {}
+
+  void setIsUserLoggedIn() {}
+
+  void setLanguageChanged() {}
 }

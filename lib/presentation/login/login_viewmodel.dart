@@ -1,23 +1,26 @@
 import 'dart:async';
 
 import 'package:trading/domain/usecase/login_usecase.dart';
-import 'package:trading/presentation/common/freezed_data_classes.dart';
 import 'package:trading/presentation/base/baseviewmodel.dart';
-
+import 'package:trading/presentation/common/freezed_data_classes.dart';
+import 'package:trading/presentation/common/state_renderer/state_render_impl.dart';
+import 'package:trading/presentation/common/state_renderer/state_renderer.dart';
 
 class LoginViewModel extends BaseViewModel
     with LoginViewModelInputs, LoginViewModelOutputs {
-  final StreamController _userNameStreamController =
-      StreamController<String>.broadcast();
-  final StreamController _passwordStreamController =
-      StreamController<String>.broadcast();
+  StreamController _userNameStreamController =
+  StreamController<String>.broadcast();
+  StreamController _passwordStreamController =
+  StreamController<String>.broadcast();
 
-  final StreamController _isAllInputsValidStreamController =
-      StreamController<void>.broadcast();
+  StreamController _isAllInputsValidStreamController =
+  StreamController<void>.broadcast();
+
+  StreamController isUserLoggedInSuccessfullyStreamController = StreamController<String>();
 
   var loginObject = LoginObject("", "");
 
-  final LoginUseCase _loginUseCase;
+  LoginUseCase _loginUseCase;
 
   LoginViewModel(this._loginUseCase);
 
@@ -27,11 +30,13 @@ class LoginViewModel extends BaseViewModel
     _userNameStreamController.close();
     _isAllInputsValidStreamController.close();
     _passwordStreamController.close();
+    isUserLoggedInSuccessfullyStreamController.close();
   }
 
   @override
   void start() {
-    // TODO: implement start
+    // view tells state renderer, please show the content of the screen
+    inputState.add(ContentState());
   }
 
   @override
@@ -45,17 +50,24 @@ class LoginViewModel extends BaseViewModel
 
   @override
   login() async {
+    inputState.add(
+        LoadingState(stateRendererType: StateRendererType.POPUP_LOADING_STATE));
     (await _loginUseCase.execute(
-            LoginUseCaseInput(loginObject.userName, loginObject.password)))
+        LoginUseCaseInput(loginObject.userName, loginObject.password)))
         .fold(
-            (failure) => {
-                  // left -> failure
-                  print(failure.message)
-                },
-            (data) => {
-                  // right -> success (data)
-                  print(data.customer?.name)
-                });
+            (failure) =>
+        {
+          // left -> failure
+          inputState.add(ErrorState(
+              StateRendererType.POPUP_ERROR_STATE, failure.message))
+        },
+            (data) {
+          // right -> success (data)
+          inputState.add(ContentState());
+
+          // navigate to main screen after the login
+          isUserLoggedInSuccessfullyStreamController.add("abcdefgh");
+        });
   }
 
   @override
@@ -76,12 +88,14 @@ class LoginViewModel extends BaseViewModel
 
   // outputs
   @override
-  Stream<bool> get outputIsPasswordValid => _passwordStreamController.stream
-      .map((password) => _isPasswordValid(password));
+  Stream<bool> get outputIsPasswordValid =>
+      _passwordStreamController.stream
+          .map((password) => _isPasswordValid(password));
 
   @override
-  Stream<bool> get outputIsUserNameValid => _userNameStreamController.stream
-      .map((userName) => _isUserNameValid(userName));
+  Stream<bool> get outputIsUserNameValid =>
+      _userNameStreamController.stream
+          .map((userName) => _isUserNameValid(userName));
 
   @override
   Stream<bool> get outputIsAllInputsValid =>

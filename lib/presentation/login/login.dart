@@ -1,14 +1,15 @@
-
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:trading/app/app_prefs.dart';
 import 'package:trading/app/di.dart';
-import 'package:trading/presentation/res/app_color.dart';
-import 'package:trading/presentation/res/app_dimen.dart';
-import 'package:trading/presentation/res/app_media.dart';
-import 'package:trading/presentation/res/app_routes.dart';
-import 'package:trading/presentation/res/app_strings.dart';
-
-import 'login_viewmodel.dart';
+import 'package:trading/presentation/common/state_renderer/state_render_impl.dart';
+import 'package:trading/presentation/login/login_viewmodel.dart';
+import 'package:trading/presentation/resources/assets_manager.dart';
+import 'package:trading/presentation/resources/color_manager.dart';
+import 'package:trading/presentation/resources/routes_manager.dart';
+import 'package:trading/presentation/resources/strings_manager.dart';
+import 'package:trading/presentation/resources/values_manager.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({Key? key}) : super(key: key);
@@ -18,10 +19,11 @@ class LoginView extends StatefulWidget {
 }
 
 class _LoginViewState extends State<LoginView> {
-  final LoginViewModel _viewModel = instance<LoginViewModel>();
+  LoginViewModel _viewModel = instance<LoginViewModel>();
+  AppPreferences _appPreferences = instance<AppPreferences>();
 
-  final TextEditingController _userNameController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  TextEditingController _userNameController = TextEditingController();
+  TextEditingController _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   _bind() {
@@ -30,6 +32,17 @@ class _LoginViewState extends State<LoginView> {
         .addListener(() => _viewModel.setUserName(_userNameController.text));
     _passwordController
         .addListener(() => _viewModel.setPassword(_passwordController.text));
+
+    _viewModel.isUserLoggedInSuccessfullyStreamController.stream
+        .listen((token) {
+      // navigate to main screen
+      SchedulerBinding.instance?.addPostFrameCallback((_) {
+        _appPreferences.setUserToken(token);
+        _appPreferences.setIsUserLoggedIn();
+        resetModules();
+        Navigator.of(context).pushReplacementNamed(Routes.mainRoute);
+      });
+    });
   }
 
   @override
@@ -40,23 +53,33 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
-    return _getContentWidget();
+    return Scaffold(
+      backgroundColor: ColorManager.white,
+      body: StreamBuilder<FlowState>(
+        stream: _viewModel.outputState,
+        builder: (context, snapshot) {
+          return snapshot.data?.getScreenWidget(context, _getContentWidget(),
+                  () {
+                _viewModel.login();
+              }) ??
+              _getContentWidget();
+        },
+      ),
+    );
   }
 
   Widget _getContentWidget() {
-    return Scaffold(
-      backgroundColor: AppColor.white,
-      body: Container(
-        padding:const EdgeInsets.only(top: AppPadding.p100),
+    return Container(
+        padding: EdgeInsets.only(top: AppPadding.p100),
         child: SingleChildScrollView(
           child: Form(
             key: _formKey,
             child: Column(
               children: [
-                const Image(image: AssetImage(AppMedia.splashLogo)),
-                const SizedBox(height: AppSize.s28),
+                Image(image: AssetImage(ImageAssets.splashLogo)),
+                SizedBox(height: AppSize.s28),
                 Padding(
-                  padding:const EdgeInsets.only(
+                  padding: EdgeInsets.only(
                       left: AppPadding.p28, right: AppPadding.p28),
                   child: StreamBuilder<bool>(
                     stream: _viewModel.outputIsUserNameValid,
@@ -65,18 +88,18 @@ class _LoginViewState extends State<LoginView> {
                         keyboardType: TextInputType.emailAddress,
                         controller: _userNameController,
                         decoration: InputDecoration(
-                            hintText: AppStrings.username,
-                            labelText: AppStrings.username,
+                            hintText: AppStrings.username.tr(),
+                            labelText: AppStrings.username.tr(),
                             errorText: (snapshot.data ?? true)
                                 ? null
-                                : AppStrings.usernameError),
+                                : AppStrings.usernameError.tr()),
                       );
                     },
                   ),
                 ),
-                const SizedBox(height: AppSize.s28),
+                SizedBox(height: AppSize.s28),
                 Padding(
-                  padding:const EdgeInsets.only(
+                  padding: EdgeInsets.only(
                       left: AppPadding.p28, right: AppPadding.p28),
                   child: StreamBuilder<bool>(
                     stream: _viewModel.outputIsPasswordValid,
@@ -85,18 +108,18 @@ class _LoginViewState extends State<LoginView> {
                         keyboardType: TextInputType.visiblePassword,
                         controller: _passwordController,
                         decoration: InputDecoration(
-                            hintText: AppStrings.password,
-                            labelText: AppStrings.password,
+                            hintText: AppStrings.password.tr(),
+                            labelText: AppStrings.password.tr(),
                             errorText: (snapshot.data ?? true)
                                 ? null
-                                : AppStrings.passwordError),
+                                : AppStrings.passwordError.tr()),
                       );
                     },
                   ),
                 ),
-                const SizedBox(height: AppSize.s28),
+                SizedBox(height: AppSize.s28),
                 Padding(
-                    padding:const EdgeInsets.only(
+                    padding: EdgeInsets.only(
                         left: AppPadding.p28, right: AppPadding.p28),
                     child: StreamBuilder<bool>(
                       stream: _viewModel.outputIsAllInputsValid,
@@ -107,15 +130,15 @@ class _LoginViewState extends State<LoginView> {
                           child: ElevatedButton(
                               onPressed: (snapshot.data ?? false)
                                   ? () {
-                                _viewModel.login();
-                              }
+                                      _viewModel.login();
+                                    }
                                   : null,
-                              child:const Text(AppStrings.login)),
+                              child: Text(AppStrings.login.tr())),
                         );
                       },
                     )),
                 Padding(
-                  padding:const EdgeInsets.only(
+                  padding: EdgeInsets.only(
                     top: AppPadding.p8,
                     left: AppPadding.p28,
                     right: AppPadding.p28,
@@ -125,19 +148,20 @@ class _LoginViewState extends State<LoginView> {
                     children: [
                       TextButton(
                         onPressed: () {
-                          Navigator.pushReplacementNamed(
+                          Navigator.pushNamed(
                               context, Routes.forgotPasswordRoute);
                         },
                         child: Text(AppStrings.forgetPassword,
-                            style: Theme.of(context).textTheme.subtitle2),
+                                style: Theme.of(context).textTheme.subtitle2)
+                            .tr(),
                       ),
                       TextButton(
                         onPressed: () {
-                          Navigator.pushReplacementNamed(
-                              context, Routes.registerRoute);
+                          Navigator.pushNamed(context, Routes.registerRoute);
                         },
                         child: Text(AppStrings.registerText,
-                            style: Theme.of(context).textTheme.subtitle2),
+                                style: Theme.of(context).textTheme.subtitle2)
+                            .tr(),
                       )
                     ],
                   ),
@@ -145,9 +169,7 @@ class _LoginViewState extends State<LoginView> {
               ],
             ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 
   @override
@@ -155,4 +177,6 @@ class _LoginViewState extends State<LoginView> {
     _viewModel.dispose();
     super.dispose();
   }
+
+  void resetModules() {}
 }

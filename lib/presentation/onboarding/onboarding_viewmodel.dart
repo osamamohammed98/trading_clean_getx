@@ -1,19 +1,16 @@
 import 'dart:async';
 
-
-
-import 'package:trading/domain/slider_view_object.dart';
-import 'package:trading/presentation/res/app_media.dart';
-import 'package:trading/presentation/res/app_strings.dart';
+import 'package:trading/domain/model/model.dart';
 import 'package:trading/presentation/base/baseviewmodel.dart';
-import 'onboarding_view.dart';
-
+import 'package:trading/presentation/resources/assets_manager.dart';
+import 'package:trading/presentation/resources/strings_manager.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class OnBoardingViewModel extends BaseViewModel
     with OnBoardingViewModelInputs, OnBoardingViewModelOutputs {
   // stream controllers
   final StreamController _streamController =
-  StreamController<SliderViewObject>();
+      StreamController<SliderViewObject>();
 
   late final List<SliderObject> _list;
 
@@ -67,15 +64,23 @@ class OnBoardingViewModel extends BaseViewModel
 
   // private functions
   List<SliderObject> _getSliderData() => [
-    SliderObject(AppStrings.onBoardingTitle1,
-        AppStrings.onBoardingSubTitle1, AppMedia.onboardingLogo1),
-    SliderObject(AppStrings.onBoardingTitle2,
-        AppStrings.onBoardingSubTitle2, AppMedia.onboardingLogo2),
-    SliderObject(AppStrings.onBoardingTitle3,
-        AppStrings.onBoardingSubTitle3, AppMedia.onboardingLogo3),
-    SliderObject(AppStrings.onBoardingTitle4,
-        AppStrings.onBoardingSubTitle4, AppMedia.onboardingLogo4)
-  ];
+        SliderObject(
+            AppStrings.onBoardingTitle1.tr(),
+            AppStrings.onBoardingSubTitle1.tr(),
+            ImageAssets.onboardingLogo1),
+        SliderObject(
+            AppStrings.onBoardingTitle2.tr(),
+            AppStrings.onBoardingSubTitle2.tr(),
+            ImageAssets.onboardingLogo2),
+        SliderObject(
+            AppStrings.onBoardingTitle3.tr(),
+            AppStrings.onBoardingSubTitle3.tr(),
+            ImageAssets.onboardingLogo3),
+        SliderObject(
+            AppStrings.onBoardingTitle4.tr(),
+            AppStrings.onBoardingSubTitle4.tr(),
+            ImageAssets.onboardingLogo4)
+      ];
 
   _postDataToView() {
     inputSliderViewObject.add(
@@ -90,7 +95,7 @@ abstract class OnBoardingViewModelInputs {
   void onPageChanged(int index);
 
   Sink
-  get inputSliderViewObject; // this is the way to add data to the stream .. stream input
+      get inputSliderViewObject; // this is the way to add data to the stream .. stream input
 }
 
 // outputs mean data or results that will be sent from our view model to our view
